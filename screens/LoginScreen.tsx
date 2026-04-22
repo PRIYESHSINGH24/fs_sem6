@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Formik } from 'formik';
+import { LogIn } from 'lucide-react-native';
 import { Screen } from '../components/layout/Screen';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
@@ -9,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { loginSchema } from '../utils/validation';
 import { showToast } from '../components/ToastProvider';
 import { useTheme } from '../context/ThemeContext';
-import { spacing } from '../constants/theme';
+import { spacing, radius } from '../constants/theme';
 
 export function LoginScreen() {
   const { signIn, isAuthenticating } = useAuth();
@@ -29,9 +30,15 @@ export function LoginScreen() {
   return (
     <Screen scroll>
       <Animated.View style={{ opacity: fadeAnim }}>
+        {/* Hero */}
         <View style={styles.header}>
+          <View style={[styles.iconCircle, { backgroundColor: palette.primary + '18' }]}>
+            <LogIn size={28} color={palette.primary} />
+          </View>
           <Text style={[styles.title, { color: palette.text }]}>Welcome back</Text>
-          <Text style={[styles.subtitle, { color: palette.mutedText }]}>Sign in to continue</Text>
+          <Text style={[styles.subtitle, { color: palette.mutedText }]}>
+            Sign in to your account
+          </Text>
         </View>
 
       <Formik
@@ -91,11 +98,21 @@ export function LoginScreen() {
 
 const styles = StyleSheet.create({
   header: {
+    alignItems: 'center',
     marginBottom: spacing.xl,
+  },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
+    letterSpacing: -0.3,
     marginBottom: spacing.xs,
   },
   subtitle: {

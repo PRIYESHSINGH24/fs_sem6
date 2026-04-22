@@ -1,5 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Pressable,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Heart, MessageSquare, Repeat2, Bookmark, Share } from 'lucide-react-native';
 import { Screen } from '../components/layout/Screen';
@@ -28,6 +36,10 @@ export function PostDetailsScreen() {
     loading: true,
     error: '',
   });
+  const [liked, setLiked] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(16)).current;
 
   const id = Number(params.id ?? 0);
 
@@ -57,6 +69,23 @@ export function PostDetailsScreen() {
     void loadPost();
   }, [loadPost]);
 
+  useEffect(() => {
+    if (!state.loading) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [state.loading]);
+
   if (state.loading) {
     return <Loader />;
   }
@@ -64,41 +93,84 @@ export function PostDetailsScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: palette.background }]}>
-        <View style={styles.header}>
-          <Image style={styles.avatar} source={{ uri: getAvatarURL(state.title) }} />
-          <View style={styles.info}>
-            <Text style={[styles.authorName, { color: palette.text }]} numberOfLines={1}>
-              {state.title || 'Anonymous'}
-            </Text>
-            <Text style={[styles.username, { color: palette.mutedText }]}>@user_{state.title?.slice(0, 5).toLowerCase().replace(/\s/g, '') || 'anon'}</Text>
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+          {/* Author header */}
+          <View style={styles.header}>
+            <Image style={styles.avatar} source={{ uri: getAvatarURL(state.title) }} />
+            <View style={styles.info}>
+              <Text style={[styles.authorName, { color: palette.text }]} numberOfLines={1}>
+                {state.title || 'Anonymous'}
+              </Text>
+              <Text style={[styles.username, { color: palette.mutedText }]}>
+                @user_{state.title?.slice(0, 5).toLowerCase().replace(/\s/g, '') || 'anon'}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <Text style={[styles.title, { color: palette.text }]}>{state.title || 'Untitled post'}</Text>
-        <Text style={[styles.body, { color: palette.text }]}>{state.body || 'No body available.'}</Text>
-        <Text style={[styles.timestamp, { color: palette.mutedText }]}>8:42 PM · Apr 22, 2026 · 14.5K Views</Text>
+          {/* Post content */}
+          <Text style={[styles.title, { color: palette.text }]}>{state.title || 'Untitled post'}</Text>
+          <Text style={[styles.body, { color: palette.text }]}>{state.body || 'No body available.'}</Text>
+          <Text style={[styles.timestamp, { color: palette.mutedText }]}>8:42 PM · Apr 22, 2026 · 14.5K Views</Text>
 
-        <View style={[styles.divider, { backgroundColor: palette.border }]} />
-        <View style={styles.statsRow}>
-          <Text style={[styles.statValue, { color: palette.text }]}>120 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Reposts</Text></Text>
-          <Text style={[styles.statValue, { color: palette.text }]}>12 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Quotes</Text></Text>
-          <Text style={[styles.statValue, { color: palette.text }]}>4,512 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Likes</Text></Text>
-          <Text style={[styles.statValue, { color: palette.text }]}>82 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Bookmarks</Text></Text>
-        </View>
-        <View style={[styles.divider, { backgroundColor: palette.border }]} />
+          <View style={[styles.divider, { backgroundColor: palette.border }]} />
 
-        <View style={styles.actionsRow}>
-           <Pressable hitSlop={12}><MessageSquare size={22} color={palette.mutedText} /></Pressable>
-           <Pressable hitSlop={12}><Repeat2 size={22} color={palette.mutedText} /></Pressable>
-           <Pressable hitSlop={12}><Heart size={22} color={palette.mutedText} /></Pressable>
-           <Pressable hitSlop={12}><Bookmark size={22} color={palette.mutedText} /></Pressable>
-           <Pressable hitSlop={12}><Share size={22} color={palette.mutedText} /></Pressable>
-        </View>
-        <View style={[styles.divider, { backgroundColor: palette.border }]} />
+          {/* Stats */}
+          <View style={styles.statsRow}>
+            <Text style={[styles.statValue, { color: palette.text }]}>
+              120 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Reposts</Text>
+            </Text>
+            <Text style={[styles.statValue, { color: palette.text }]}>
+              12 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Quotes</Text>
+            </Text>
+            <Text style={[styles.statValue, { color: palette.text }]}>
+              4,512 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Likes</Text>
+            </Text>
+            <Text style={[styles.statValue, { color: palette.text }]}>
+              82 <Text style={[styles.statLabel, { color: palette.mutedText }]}>Bookmarks</Text>
+            </Text>
+          </View>
 
-        {!!state.error && <Text style={[styles.error, { color: palette.danger }]}>{state.error}</Text>}
+          <View style={[styles.divider, { backgroundColor: palette.border }]} />
 
-        {!!state.error && <Button label="Retry" onPress={() => void loadPost()} style={styles.retryButton} />}
+          {/* Actions */}
+          <View style={styles.actionsRow}>
+            <Pressable hitSlop={12}>
+              <MessageSquare size={22} color={palette.mutedText} />
+            </Pressable>
+            <Pressable hitSlop={12}>
+              <Repeat2 size={22} color={palette.mutedText} />
+            </Pressable>
+            <Pressable
+              hitSlop={12}
+              onPress={() => {
+                setLiked((prev) => !prev);
+                showToast('success', liked ? 'Unliked' : 'Liked!', '');
+              }}
+            >
+              <Heart
+                size={22}
+                color={liked ? palette.danger : palette.mutedText}
+                fill={liked ? palette.danger : 'transparent'}
+              />
+            </Pressable>
+            <Pressable hitSlop={12}>
+              <Bookmark size={22} color={palette.mutedText} />
+            </Pressable>
+            <Pressable hitSlop={12}>
+              <Share size={22} color={palette.mutedText} />
+            </Pressable>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: palette.border }]} />
+
+          {/* Error */}
+          {!!state.error && (
+            <View style={[styles.errorContainer, { backgroundColor: palette.danger + '10' }]}>
+              <Text style={[styles.error, { color: palette.danger }]}>{state.error}</Text>
+              <Button label="Retry" onPress={() => void loadPost()} style={styles.retryButton} />
+            </View>
+          )}
+        </Animated.View>
       </ScrollView>
     </Screen>
   );
@@ -127,6 +199,7 @@ const styles = StyleSheet.create({
   authorName: {
     fontSize: 17,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   username: {
     fontSize: 15,
@@ -135,15 +208,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '800',
+    letterSpacing: -0.3,
     marginBottom: spacing.sm,
+    lineHeight: 28,
   },
   body: {
-    fontSize: 18,
+    fontSize: 17,
     lineHeight: 26,
     marginBottom: spacing.lg,
   },
   timestamp: {
-    fontSize: 15,
+    fontSize: 14,
     marginBottom: spacing.md,
   },
   divider: {
@@ -170,11 +245,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: spacing.xs,
   },
+  errorContainer: {
+    padding: spacing.md,
+    borderRadius: radius.md,
+    alignItems: 'center',
+  },
   error: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.md,
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   retryButton: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
 });

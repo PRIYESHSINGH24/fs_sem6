@@ -26,25 +26,85 @@ export function SkeletonCard() {
 
   const opacity = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.4, 0.9],
+    outputRange: [0.4, 0.8],
   });
 
+  const baseColor = palette.skeletonBase;
+  const highlightColor = palette.skeletonHighlight;
+
   return (
-    <Animated.View
+    <View
       style={[
         styles.card,
-        { backgroundColor: palette.skeletonBase, borderColor: palette.border },
-        { opacity },
+        { backgroundColor: palette.card, borderColor: palette.border },
       ]}
-    />
+    >
+      {/* Header row: avatar + 2 lines */}
+      <View style={styles.headerRow}>
+        <Animated.View
+          style={[styles.avatarSkeleton, { backgroundColor: baseColor, opacity }]}
+        />
+        <View style={styles.headerLines}>
+          <Animated.View
+            style={[styles.lineSkeleton, styles.lineShort, { backgroundColor: baseColor, opacity }]}
+          />
+          <Animated.View
+            style={[styles.lineSkeleton, styles.lineXShort, { backgroundColor: highlightColor, opacity }]}
+          />
+        </View>
+      </View>
+      {/* Body lines */}
+      <Animated.View
+        style={[styles.lineSkeleton, styles.lineFull, { backgroundColor: baseColor, opacity }]}
+      />
+      <Animated.View
+        style={[styles.lineSkeleton, styles.lineMedium, { backgroundColor: highlightColor, opacity }]}
+      />
+      <Animated.View
+        style={[styles.lineSkeleton, styles.lineShort, { backgroundColor: baseColor, opacity }]}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    height: 112,
-    borderRadius: radius.lg,
-    marginBottom: spacing.md,
+    borderRadius: radius.md + 4,
     borderWidth: 1,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  avatarSkeleton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: spacing.md,
+  },
+  headerLines: {
+    flex: 1,
+    gap: 6,
+  },
+  lineSkeleton: {
+    height: 12,
+    borderRadius: 6,
+  },
+  lineXShort: {
+    width: '30%',
+  },
+  lineShort: {
+    width: '50%',
+  },
+  lineMedium: {
+    width: '75%',
+    marginTop: spacing.xs,
+  },
+  lineFull: {
+    width: '100%',
+    marginTop: spacing.xs,
   },
 });

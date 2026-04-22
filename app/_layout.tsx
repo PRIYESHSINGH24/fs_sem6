@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider } from '../context/ThemeContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { SavedPostsProvider } from '../context/SavedPostsContext';
+import { UserPostsProvider } from '../context/UserPostsContext';
 import { RootSplashScreen } from '../screens/RootSplashScreen';
 import { AppToast } from '../components/ToastProvider';
 import { ErrorBoundary } from '../components/feedback/ErrorBoundary';
@@ -49,8 +50,10 @@ export default function RootLayout() {
       <ThemeProvider>
         <AuthProvider>
           <SavedPostsProvider>
-            <RouteGuard />
-            <AppToast />
+            <UserPostsProvider>
+              <RouteGuard />
+              <AppToast />
+            </UserPostsProvider>
           </SavedPostsProvider>
         </AuthProvider>
       </ThemeProvider>

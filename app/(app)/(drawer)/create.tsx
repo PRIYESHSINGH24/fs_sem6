@@ -1,25 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../../../context/ThemeContext';
+import { CreatePostScreen } from '../../../screens/CreatePostScreen';
 
 export default function CreatePostRoute() {
-  const { palette } = useTheme();
-  
-  return (
-    <View style={[styles.container, { backgroundColor: palette.background }]}>
-      <Text style={[styles.label, { color: palette.text }]}>New Post Feature Coming Soon</Text>
-    </View>
-  );
+  return <CreatePostScreen />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 18,
-    fontWeight: '600',
-  }
-});
