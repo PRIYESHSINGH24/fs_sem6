@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Pressable, StyleSheet, Text, ViewStyle, Animated } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle, Animated } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { radius, spacing } from '../../constants/theme';
 
@@ -7,19 +7,20 @@ type Props = {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  loading?: boolean;
   style?: ViewStyle;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function Button({ label, onPress, disabled, style }: Props) {
+export function Button({ label, onPress, disabled, loading, style }: Props) {
   const { palette } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
 
   return (
     <AnimatedPressable
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
       onPressIn={() => {
         Animated.spring(scale, {
           toValue: 0.98,
@@ -38,12 +39,16 @@ export function Button({ label, onPress, disabled, style }: Props) {
       }}
       style={[
         styles.button,
-        { backgroundColor: disabled ? palette.mutedText : palette.primary },
+        { backgroundColor: disabled || loading ? palette.mutedText : palette.primary },
         style,
         { transform: [{ scale }] },
       ]}
     >
-      <Text style={styles.label}>{label}</Text>
+      {loading ? (
+        <ActivityIndicator color="#fff" />
+      ) : (
+        <Text style={styles.label}>{label}</Text>
+      )}
     </AnimatedPressable>
   );
 }

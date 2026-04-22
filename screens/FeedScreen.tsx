@@ -21,7 +21,7 @@ import { spacing } from '../constants/theme';
 import { showToast } from '../components/ToastProvider';
 import { useSavedPosts } from '../context/SavedPostsContext';
 
-import { Search } from 'lucide-react-native';
+import { Search, Inbox } from 'lucide-react-native';
 
 type FeedState = {
   items: RemotePost[];
@@ -199,7 +199,12 @@ export function FeedScreen() {
             windowSize={7}
             refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={onRefresh} />}
             ListEmptyComponent={
-              <Text style={[styles.emptyText, { color: palette.mutedText }]}>No items matched your search.</Text>
+              <View style={styles.emptyContainer}>
+                <Inbox size={48} color={palette.mutedText} style={styles.emptyIcon} />
+                <Text style={[styles.emptyText, { color: palette.mutedText }]}>
+                  {searchText ? 'No posts matched your search.' : 'No posts available right now.'}
+                </Text>
+              </View>
             }
             ListFooterComponent={
               state.loadingMore ? <Text style={[styles.loadingMore, { color: palette.mutedText }]}>Loading more...</Text> : null
@@ -246,9 +251,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     fontWeight: '600',
   },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.xxxl,
+    padding: spacing.xl,
+  },
+  emptyIcon: {
+    marginBottom: spacing.md,
+    opacity: 0.5,
+  },
   emptyText: {
     textAlign: 'center',
-    marginTop: spacing.xl,
+    fontSize: 16,
+    fontWeight: '500',
   },
   loadingMore: {
     textAlign: 'center',

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Formik } from 'formik';
 import { Screen } from '../components/layout/Screen';
@@ -14,23 +14,37 @@ import { spacing } from '../constants/theme';
 export function LoginScreen() {
   const { signIn, isAuthenticating } = useAuth();
   const { palette } = useTheme();
+  const [authError, setAuthError] = useState('');
+  
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   return (
     <Screen scroll>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: palette.text }]}>Welcome back</Text>
-        <Text style={[styles.subtitle, { color: palette.mutedText }]}>Sign in to continue</Text>
-      </View>
+      <Animated.View style={{ opacity: fadeAnim }}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: palette.text }]}>Welcome back</Text>
+          <Text style={[styles.subtitle, { color: palette.mutedText }]}>Sign in to continue</Text>
+        </View>
 
       <Formik
         initialValues={{ email: '', password: '' }}
         validationSchema={loginSchema}
         validateOnChange
         onSubmit={async (values) => {
+          setAuthError('');
           try {
             await signIn(values.email, values.password);
             showToast('success', 'Logged in', 'Your session has been restored.');
           } catch (error) {
+            setAuthError((error as Error).message);
             showToast('error', 'Login failed', (error as Error).message);
           }
         }}
@@ -54,10 +68,14 @@ export function LoginScreen() {
               secureTextEntry
               error={touched.password ? errors.password : undefined}
             />
+            {!!authError && (
+              <Text style={[styles.authError, { color: palette.danger }]}>{authError}</Text>
+            )}
             <Button
-              label={isAuthenticating ? 'Signing in...' : 'Login'}
+              label="Login"
               onPress={() => handleSubmit()}
-              disabled={isAuthenticating || !isValid}
+              disabled={!isValid}
+              loading={isAuthenticating}
             />
           </View>
         )}
@@ -66,6 +84,7 @@ export function LoginScreen() {
       <Pressable onPress={() => router.push('/(auth)/signup')} style={styles.linkWrap}>
         <Text style={[styles.link, { color: palette.primary }]}>No account? Create one</Text>
       </Pressable>
+      </Animated.View>
     </Screen>
   );
 }
@@ -85,9 +104,15 @@ const styles = StyleSheet.create({
   linkWrap: {
     marginTop: spacing.lg,
     alignItems: 'center',
+    padding: spacing.md,
   },
   link: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  authError: {
+    marginBottom: spacing.md,
     fontSize: 14,
-    fontWeight: '600',
+    textAlign: 'center',
   },
 });
